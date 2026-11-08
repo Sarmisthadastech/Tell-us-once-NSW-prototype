@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en-AU"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tell Us Once – NSW prototype</title>
+<style>
+:root{--bg:#f4f6fa;--sf:#fff;--tx:#10213f;--mu:#56627a;--bd:#d6dce8;--ac:#0b4fd1;--ac2:#e6eefc;--ok:#0a7a4b;--okbg:#e3f5ec;--on:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1524;--sf:#162036;--tx:#e8edf8;--mu:#9ba8c2;--bd:#2a3856;--ac:#7aa6ff;--ac2:#1b2c52;--ok:#5ad195;--okbg:#12342a;--on:#0e1524;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0e1524;--sf:#162036;--tx:#e8edf8;--mu:#9ba8c2;--bd:#2a3856;--ac:#7aa6ff;--ac2:#1b2c52;--ok:#5ad195;--okbg:#12342a;--on:#0e1524;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:20px 16px 40px}
+h1,h2{font-family:Georgia,"Times New Roman",serif;font-weight:700;line-height:1.2;margin:0}
+h1{font-size:1.9rem}h2{font-size:1.4rem;margin-bottom:6px}
+.mu{color:var(--mu)}
+.badge{display:inline-block;font-size:.8rem;border:1px solid var(--bd);border-radius:99px;padding:2px 10px;color:var(--mu);margin-top:8px}
+ol.steps{list-style:none;display:flex;gap:6px;padding:0;margin:20px 0}
+ol.steps li{flex:1;text-align:center;font-size:.85rem;padding:8px 4px;border-bottom:3px solid var(--bd);color:var(--mu)}
+ol.steps li.on{border-color:var(--ac);color:var(--tx);font-weight:600}
+ol.steps li.done{border-color:var(--ok);color:var(--ok)}
+main{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:20px}
+.cards{display:grid;gap:10px;margin:14px 0}
+.card{font:inherit;color:inherit;text-align:left;background:var(--sf);border:2px solid var(--bd);border-radius:8px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.card span{color:var(--mu);font-size:.9rem}
+.card.sel{border-color:var(--ac);background:var(--ac2)}
+label{display:block;font-weight:600;margin:14px 0 4px}
+input,textarea{width:100%;font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:6px;padding:10px}
+input:focus,textarea:focus,button:focus-visible,summary:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn{font:inherit;font-weight:600;background:var(--ac);color:var(--on);border:2px solid var(--ac);border-radius:6px;padding:10px 18px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ac)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.ag{display:block;border:1px solid var(--bd);border-radius:8px;padding:12px;margin:10px 0;cursor:pointer}
+.ag input{width:auto;margin-right:8px}
+.ag b{font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chip{font-size:.8rem;background:var(--ac2);border-radius:4px;padding:2px 8px;overflow-wrap:anywhere}
+.lvl{font-size:.8rem;color:var(--mu);margin-left:6px}
+.stat{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--bd)}
+.bar{height:6px;border-radius:3px;background:var(--bd);width:110px;overflow:hidden;flex:none}
+.bar i{display:block;height:100%;background:var(--ok)}
+.ok{color:var(--ok);font-weight:600}
+.ref{background:var(--okbg);border-radius:8px;padding:12px 14px;margin:12px 0}
+.log{font-size:.85rem;color:var(--mu);margin:8px 0 0;padding-left:18px}
+details{margin-top:22px;border-top:1px solid var(--bd);padding-top:12px}
+summary{cursor:pointer;font-weight:600}
+details ol,details ul{padding-left:20px;margin:8px 0}
+.err{color:#b3261e;margin:10px 0 0}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .err{color:#ff8a80}}
+:root[data-theme="dark"] .err{color:#ff8a80}
+</style></head>
+<body><div class="wrap">
+<header><h1>Tell us once</h1><p class="mu" style="margin:6px 0 0">Share a life event one time. We tell every agency that needs to know, with your consent.</p><span class="badge">Prototype with made-up data. Nothing is sent to any real agency.</span></header>
+<ol class="steps" id="steps"></ol>
+<main id="app"></main>
+</div>
+<script>
+var FL={fullName:"Full name",dob:"Date of birth",oldAddr:"Previous address",newAddr:"New address",moveDate:"Move date",parent:"Parent’s name",childName:"Child’s name",childDob:"Child’s date of birth",addr:"Home address",deceased:"Name of person who died",dod:"Date of death",informant:"Your name",employer:"Employer name",startDate:"Start date",bizName:"Business name",bizAddr:"Business address"};
+var DT={dob:1,moveDate:1,childDob:1,dod:1,startDate:1};
+var EV={
+move:{t:"I’ve moved home",s:"Update your address with every agency at once.",f:["fullName","dob","oldAddr","newAddr","moveDate"],a:[
+["Service NSW","NSW","Update licence and vehicle registration address",["fullName","dob","newAddr"]],
+["Electoral roll (AEC)","Federal","Update your enrolment",["fullName","dob","newAddr"]],
+["Revenue NSW","NSW","Redirect fines and duty notices",["fullName","newAddr"]],
+["Local council","NSW","Update your rates notices",["fullName","oldAddr","newAddr"]],
+["Services Australia","Federal","Update Medicare and Centrelink",["fullName","dob","newAddr","moveDate"]]]},
+baby:{t:"We’ve had a baby",s:"Register the birth and set up health and family support.",f:["parent","childName","childDob","addr"],a:[
+["NSW Registry of Births, Deaths and Marriages","NSW","Register the birth",["parent","childName","childDob"]],
+["Services Australia","Federal","Enrol in Medicare and claim family payments",["parent","childName","childDob"]],
+["NSW Health","NSW","Book a child and family health nurse visit",["parent","childName","childDob","addr"]],
+["Department of Education","NSW","Register interest in early learning",["parent","childName","childDob"]]]},
+death:{t:"Someone close to me has died",s:"Notify agencies gently. In a real service a person would check each step.",f:["informant","deceased","dod"],a:[
+["NSW Registry of Births, Deaths and Marriages","NSW","Complete the death registration with the funeral director",["deceased","dod","informant"]],
+["Services Australia","Federal","Stop payments and update Medicare",["deceased","dod"]],
+["Service NSW","NSW","Cancel licence and handle vehicle registration",["deceased","dod"]],
+["Electoral roll (AEC)","Federal","Remove from the roll",["deceased","dod"]],
+["NSW Trustee and Guardian","NSW","Estate help, only if needed (for example, no will or no executor). Untick if not",["deceased","dod","informant"]]]},
+job:{t:"I’ve started a new job",s:"Update tax, payments and licences that depend on your work.",f:["fullName","dob","employer","startDate"],a:[
+["Australian Taxation Office","Federal","Check your tax file number is linked to your new employer (employers usually report this directly)",["fullName","dob","employer"]],
+["Services Australia","Federal","Report your new income if you receive payments",["fullName","dob","employer","startDate"]],
+["Service NSW","NSW","Check the contact details on your Service NSW account are current",["fullName","dob"]]]},
+business:{t:"I’ve started a small business",s:"Register once for tax, payroll and safety obligations.",f:["fullName","dob","bizName","bizAddr"],a:[
+["Australian Business Register","Federal","Apply for an ABN",["fullName","dob","bizName","bizAddr"]],
+["ASIC","Federal","Register your business name",["fullName","dob","bizName"]],
+["Revenue NSW","NSW","Check payroll tax registration",["fullName","bizName","bizAddr"]],
+["Service NSW","NSW","Connect you with a business concierge",["fullName","bizName","bizAddr"]],
+["SafeWork NSW","NSW","Share workplace safety obligations",["bizName","bizAddr"]]]}
+};
+var STG=["Queued","Sent securely","Confirmed"];
+var S={step:0,ev:null,d:{},c:{},st:{},log:[],ref:""};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function hood(){return '<details><summary>How this works end to end</summary><ol><li><b>Prove who you are.</b> Sign in once with a Service NSW account or myID.</li><li><b>Say it once.</b> Pick the event or describe it in plain words. An AI model can pre-fill the form and flag anything missing, but it never decides eligibility.</li><li><b>Consent per agency.</b> Each agency receives only the fields it needs, and you can untick any of them.</li><li><b>Send securely.</b> Each agency gets its update through its own API or a secure queue.</li><li><b>Confirm and audit.</b> You see every confirmation and a log of what was shared, when and with whom.</li><li><b>People stay in the loop.</b> Sensitive events such as a death are reviewed by a person before sending.</li></ol></details>'}
+function render(){
+ document.getElementById("steps").innerHTML=["Situation","Details","Consent","Progress"].map(function(t,i){return '<li class="'+(i==S.step?"on":i<S.step?"done":"")+'">'+t+'</li>'}).join("");
+ document.getElementById("app").innerHTML=[v0,v1,v2,v3][S.step]();
+}
+function v0(){return '<h2>What’s happened?</h2><p class="mu" style="margin:0">Choose a life event, or describe it in your own words.</p><div class="cards">'+Object.keys(EV).map(function(k){return '<button class="card'+(S.ev==k?" sel":"")+'" onclick="pick(\''+k+'\')"><b>'+EV[k].t+'</b><span>'+EV[k].s+'</span></button>'}).join("")+'</div><label for="free">Or tell us in your own words (no real personal details)</label><textarea id="free" rows="2" placeholder="For example: we moved to a new flat last weekend"></textarea><p id="hint" class="mu" style="margin:6px 0 0"></p><div class="row"><button class="btn ghost" onclick="guess()">Suggest an event</button><button class="btn" '+(S.ev?"":"disabled")+' onclick="go(1)">Continue</button></div>'+hood()}
+function pick(k){S.ev=k;S.d={};render()}
+function guess(){var t=document.getElementById("free").value.toLowerCase(),k=null;
+ if(/job|hired|employ|new role/.test(t))k="job";else if(/business|abn|start(ed)? a company/.test(t))k="business";else if(/baby|born|birth|newborn/.test(t))k="baby";else if(/died|passed away|death|funeral/.test(t))k="death";else if(/mov|new home|new flat|relocat|address/.test(t))k="move";
+ var raw=document.getElementById("free").value;
+ if(k){S.ev=k;render()}
+ document.getElementById("free").value=raw;
+ document.getElementById("hint").textContent=k?"This sounds like: “"+EV[k].t+"”. Check it is right, then continue.":"We couldn’t match that. Please choose an event above."}
+function v1(){var e=EV[S.ev];return '<h2>Your details</h2><p class="mu" style="margin:0">You only enter these once. Use made-up details for this prototype.</p>'+e.f.map(function(k){return '<label for="f_'+k+'">'+FL[k]+'</label><input id="f_'+k+'" type="'+(DT[k]?"date":"text")+'" value="'+esc(S.d[k]||"")+'" oninput="S.d[\''+k+'\']=this.value">'}).join("")+'<p class="err" id="err" role="alert"></p><div class="row"><button class="btn ghost" onclick="go(0)">Back</button><button class="btn" onclick="toConsent()">Continue</button></div>'}
+function toConsent(){var e=EV[S.ev];for(var i=0;i<e.f.length;i++){if(!(S.d[e.f[i]]||"").trim()){document.getElementById("err").textContent="Please fill in: "+FL[e.f[i]]+".";return}}
+ S.c={};e.a.forEach(function(a,i){S.c[i]=!/only if needed/.test(a[2])});go(2)}
+function v2(){var e=EV[S.ev];var n=Object.keys(S.c).filter(function(i){return S.c[i]}).length;
+ return '<h2>Choose who we tell</h2><p class="mu" style="margin:0">Each agency gets only the details shown. Untick any you want to handle yourself.</p>'+e.a.map(function(a,i){return '<label class="ag"><input type="checkbox" '+(S.c[i]?"checked":"")+' onchange="S.c['+i+']=this.checked;render()"><b>'+a[0]+'</b><span class="lvl">'+a[1]+' government</span><div>'+a[2]+'</div><div class="chips">'+a[3].map(function(k){return '<span class="chip">'+FL[k]+': '+esc(S.d[k])+'</span>'}).join("")+'</div></label>'}).join("")+(S.ev=="death"?'<label class="ag"><input type="checkbox" '+(S.auth?"checked":"")+' onchange="S.auth=this.checked;render()"> I confirm I am authorised to act for the person who died, for example as executor or next of kin.</label>':'')+'<p class="mu">By continuing you agree to share these details with the agencies ticked above, for this purpose only.</p><div class="row"><button class="btn ghost" onclick="go(1)">Back</button><button class="btn" '+(n&&(S.ev!="death"||S.auth)?"":"disabled")+' onclick="send()">Send to '+n+' agenc'+(n==1?"y":"ies")+'</button></div>'}
+function stamp(){return new Date().toLocaleTimeString("en-AU")}
+function send(){var e=EV[S.ev];S.ref="TUO-"+Math.floor(100000+Math.random()*900000);S.st={};S.log=[stamp()+" Consent recorded for "+Object.keys(S.c).filter(function(i){return S.c[i]}).length+" agencies"];
+ e.a.forEach(function(a,i){if(!S.c[i])return;S.st[i]=0;
+  setTimeout(function(){S.st[i]=1;S.log.push(stamp()+" "+a[0]+": "+a[3].length+" fields sent securely");if(S.step==3)render()},800+Math.random()*1500);
+  setTimeout(function(){S.st[i]=2;S.log.push(stamp()+" "+a[0]+": update confirmed");if(S.step==3)render()},2800+Math.random()*3000)});
+ go(3)}
+function v3(){var e=EV[S.ev],ids=Object.keys(S.st),done=ids.filter(function(i){return S.st[i]==2}).length;
+ return '<h2>'+(done==ids.length?"All updates confirmed":"Sending your updates")+'</h2><div class="ref">Reference <b>'+S.ref+'</b><br><span class="mu">'+done+' of '+ids.length+' agencies confirmed. Keep this reference for any follow-up.</span></div>'+ids.map(function(i){var a=e.a[i],s=S.st[i];return '<div class="stat"><div><b>'+a[0]+'</b><br><span class="mu">'+a[2]+'</span></div><div style="text-align:right"><div class="'+(s==2?"ok":"mu")+'">'+STG[s]+'</div><div class="bar"><i style="width:'+((s+1)/3*100)+'%"></i></div></div></div>'}).join("")+'<details open><summary>What was shared, and when</summary><ul class="log">'+S.log.map(function(l){return '<li>'+esc(l)+'</li>'}).join("")+'</ul></details><div class="row"><button class="btn ghost" onclick="reset()">Start another event</button></div>'+hood()}
+function go(n){S.step=n;render();window.scrollTo(0,0)}
+function reset(){S={step:0,ev:null,d:{},c:{},st:{},log:[],ref:""};render()}
+render();
+</script></body></html>
